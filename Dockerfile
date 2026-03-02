@@ -1,22 +1,54 @@
-#build stage
-
 # On s'appuie sur l'image ubuntu:noble
 FROM ubuntu:noble AS builder
 
-# Notre répertoire de travail
+# On rend paramétrable la version de l'application Libra à télécharger
 
-WORKDIR ./
+ARG LIBRA_VERSION=0.0.1
 
-# Installation de wget
-RUN apt-get update \
-	&& apt-get install -y wget \
-	&& rm -rf /var/lib/apt/lists/*
+ARG LIBRA_CHECKSUM=d0757c5b427825126f98ffa07683d676fb8c62a02d098659cce9d3cd485b79a0
 
-# Utilisation de "wget" comme point d'entrée de notre conteneur
-ENTRYPOINT ["/usr/bin/wget", "--"]
+ARG LIBRA_REPOSITORY=https://github.com/Bornholm/libra
+
+# On mets à jour les dépendances
+
+RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 
 
-# Définition de la commande par défaut (exemple d'URL)
-CMD ["https://github.com/OpenClassrooms-Student-Center/8431896-optimisez-votre-deploiement-en-creant-des-conteneurs-avec-docker/releases/tag/v0.0.3"]
+# On installe les dépendance nécessaires à la récupération de l’application Libra
+RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y wget
 
+# On télécharge l'archive contenant l'exécutable Libra
+
+RUN wget \
+    -O libra.tar.gz \
+    ${LIBRA_REPOSITORY}/releases/download/v${LIBRA_VERSION}/libra_${LIBRA_VERSION}_linux_amd64.tar.gz
+
+
+
+# On vérifie l'empreinte de l'archive
+RUN echo "${LIBRA_CHECKSUM} libra.tar.gz" | sha256sum --check --status
+
+# On créait le répertoire /usr/local/bin
+RUN mkdir -p /usr/local/bin
+
+# On extrait le binaire Libra contenu dans l'archive et on le place directement dans le répertoire /usr/local/bin
+
+RUN tar -xzf libra.tar.gz -C /usr/local/bin libra
+
+# On s'assure que le binaire est éxécutable
+RUN chmod +x /usr/local/bin/libra
+
+# On indique que l'application écoute sur le port 8080 et qu'il devrait être exposé
+EXPOSE 8080
+
+
+# On indique que le conteneur souhaite utliser un volume pour le répertoire /uploads
+VOLUME /uploads
+
+
+# On configure l'exécutable comme processus à lancer au démarrage du conteneur
+
+CMD ["/user/local/bin/libra"]
+
+# Description
 LABEL Name="Libra" Version="0.0.1"
