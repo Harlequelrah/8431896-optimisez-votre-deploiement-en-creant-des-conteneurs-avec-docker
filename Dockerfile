@@ -48,7 +48,7 @@ VOLUME /uploads
 
 # On configure l'exécutable comme processus à lancer au démarrage du conteneur
 
-CMD ["/user/local/bin/libra"]
+CMD ["/usr/local/bin/libra"]
 
 # Description
 LABEL Name="Libra" Version="0.0.1"
