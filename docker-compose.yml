@@ -1,0 +1,13 @@
+services :
+  libra :
+    image: libra:test
+    ports :
+      - 8080:80
+    environment:
+      - LIBRA_STORE_DSN:s3://minio/libra
+
+  minio:
+    image: minio/minio:latest
+    ports :
+        - 9000:9000
+        - 9001:9001
