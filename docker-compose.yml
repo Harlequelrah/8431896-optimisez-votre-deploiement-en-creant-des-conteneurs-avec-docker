@@ -6,6 +6,12 @@ services :
     environment:
       - s3://minio:NotSoSecret@minio:9000/libra
 
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 5s
+
   minio:
     image: minio/minio:latest
     ports :
